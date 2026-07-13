@@ -3,18 +3,20 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Cache bust: v2
-# Copy package files
+# Install build dependencies for native modules (bcrypt)
+RUN apk add --no-cache python3 make g++ openssl
+
+# Cache bust: v3
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install all dependencies (including dev)
+# Install all deps including dev (runs scripts for native bindings)
 RUN npm ci
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Copy source and build
+# Build TypeScript
 COPY tsconfig.json ./
 COPY src ./src/
 RUN npm run build
@@ -24,25 +26,26 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy package files AND prisma schema BEFORE npm ci
-# so postinstall (if any) can find schema.prisma
+# Install OpenSSL 1.1 for Prisma query engine + python/make/g++ for bcrypt rebuild
+RUN apk add --no-cache openssl openssl-dev python3 make g++
+
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies only (no postinstall issues)
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+# Install production deps WITH scripts (needed for bcrypt native rebuild)
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Copy built files from builder
+# Copy built app
 COPY --from=builder /app/dist ./dist
 
-# Copy prisma client binaries from builder
+# Copy Prisma generated client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create upload directories
 RUN mkdir -p src/uploads/products src/uploads/banners
 
-# Create non-root user for security
+# Non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodeuser -u 1001 && \
     chown -R nodeuser:nodejs /app
@@ -51,9 +54,7 @@ USER nodeuser
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
   CMD wget -q -O- http://localhost:3000/health || exit 1
 
-# Push schema to DB then start server
-# Push schema to DB then start server
 CMD ["node", "dist/app.js"]
