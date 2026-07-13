@@ -1,0 +1,199 @@
+// TB Mulya Abadi - Prisma Schema
+// Database: MySQL
+// Generator: Prisma Client (TypeScript)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id             String         @id @default(uuid()) @db.VarChar(36)
+  name           String
+  email          String         @unique
+  password       String?
+  googleId       String?        @unique @db.VarChar(255)
+  phone          String?
+  address        String?        @db.Text
+  avatarUrl      String?        @db.Text
+  role           Role           @default(USER)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  refreshTokens  RefreshToken[]
+  favorites      Favorite[]
+
+  @@index([email])
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Role_ {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  name        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model Category {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  iconUrl     String?   @db.Text
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  products    Product[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+model Product {
+  id          String        @id @default(uuid()) @db.VarChar(36)
+  name        String
+  slug        String        @unique
+  description String?       @db.Text
+  price       Decimal       @db.Decimal(15, 2)
+  stock       Int           @default(0)
+  weight      Decimal?      @db.Decimal(8, 2)
+  imageUrl    String?       @db.Text
+  status      ProductStatus @default(ACTIVE)
+  isFeatured  Boolean       @default(false)
+  viewCount   Int           @default(0)
+  categoryId  String        @db.VarChar(36)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+
+  category    Category      @relation(fields: [categoryId], references: [id])
+  favorites   Favorite[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([price])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model Banner {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  title       String
+  subtitle    String?
+  imageUrl    String    @db.Text
+  linkUrl     String?   @db.Text
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@index([deletedAt])
+  @@map("banners")
+}
+
+model StoreProfile {
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  name            String
+  description     String?  @db.Text
+  address         String   @db.Text
+  city            String
+  province        String
+  postalCode      String?
+  phone           String
+  email           String?
+  website         String?  @db.Text
+  logoUrl         String?  @db.Text
+  bannerUrl       String?  @db.Text
+  latitude        Decimal? @db.Decimal(10, 8)
+  longitude       Decimal? @db.Decimal(11, 8)
+  openMonFri      String   @default("07:30-17:00")
+  openSaturday    String   @default("07:30-17:00")
+  openSunday      String   @default("07:30-14:00")
+  isDeliveryFree  Boolean  @default(false)
+  deliveryNote    String?  @db.Text
+  facebookUrl     String?  @db.Text
+  instagramUrl    String?  @db.Text
+  whatsappNumber  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("store_profile")
+}
+
+model Favorite {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  userId    String   @db.VarChar(36)
+  productId String   @db.VarChar(36)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("favorites")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  token       String    @unique @db.VarChar(512)
+  userId      String    @db.VarChar(36)
+  expiresAt   DateTime
+  isRevoked   Boolean   @default(false)
+  ipAddress   String?
+  userAgent   String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}

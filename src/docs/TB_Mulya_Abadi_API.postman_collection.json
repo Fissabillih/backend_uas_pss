@@ -1,0 +1,450 @@
+{
+  "info": {
+    "_postman_id": "tb-mulya-abadi-api-v1",
+    "name": "TB Mulya Abadi Backend API",
+    "description": "Complete API collection for TB Mulya Abadi Material Store Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:3000", "type": "string" },
+    { "key": "API_URL", "value": "{{BASE_URL}}/api/v1", "type": "string" },
+    { "key": "ACCESS_TOKEN", "value": "", "type": "string" },
+    { "key": "REFRESH_TOKEN", "value": "", "type": "string" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": { "type": "text/javascript", "exec": [""] }
+    }
+  ],
+  "item": [
+    {
+      "name": "🔧 System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/health" }
+        },
+        {
+          "name": "Version",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/version" }
+        },
+        {
+          "name": "Welcome",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/" }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "if (pm.response.code === 201) {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('ACCESS_TOKEN', json.data.accessToken);",
+            "  pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{API_URL}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test1234!\",\n  \"phone\": \"+6281234567899\",\n  \"address\": \"Jl. Contoh No. 1, Pemalang\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Admin)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "if (pm.response.code === 200) {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('ACCESS_TOKEN', json.data.accessToken);",
+            "  pm.collectionVariables.set('REFRESH_TOKEN', json.data.refreshToken);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{API_URL}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@tbmulyaabadi.com\",\n  \"password\": \"Admin123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (User)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{API_URL}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@tbmulyaabadi.com\",\n  \"password\": \"User123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{API_URL}}/auth/refresh-token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Me (Current User)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/auth/me"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/auth/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏪 Store Profile",
+      "item": [
+        {
+          "name": "Get Store Profile",
+          "request": { "method": "GET", "url": "{{API_URL}}/store" }
+        },
+        {
+          "name": "Update Store Profile (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TB Mulya Abadi\",\n  \"description\": \"Toko Bangunan Mulya Abadi - Terpercaya sejak 1995\",\n  \"phone\": \"+62287-321456\",\n  \"whatsappNumber\": \"+6281234567890\",\n  \"isDeliveryFree\": true,\n  \"deliveryNote\": \"Gratis ongkos kirim untuk area Kota Pemalang\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📂 Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": { "method": "GET", "url": { "raw": "{{API_URL}}/categories?page=1&limit=20", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] } }
+        },
+        {
+          "name": "Get Category by ID",
+          "request": { "method": "GET", "url": "{{API_URL}}/categories/00000000-0000-0000-0000-000000000030" }
+        },
+        {
+          "name": "Get Category by Slug",
+          "request": { "method": "GET", "url": "{{API_URL}}/categories/slug/semen" }
+        },
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Perekat\",\n  \"description\": \"Perekat keramik, mortar, dan sealant\",\n  \"isActive\": true,\n  \"sortOrder\": 14\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Category (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/categories/00000000-0000-0000-0000-000000000030",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Semen Portland, semen putih, dan semen instan untuk berbagai konstruksi\",\n  \"sortOrder\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Category (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/categories/00000000-0000-0000-0000-000000000030"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏗️ Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": { "method": "GET", "url": { "raw": "{{API_URL}}/products?page=1&limit=10&sort=newest", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "sort", "value": "newest" }] } }
+        },
+        {
+          "name": "Search Products",
+          "request": { "method": "GET", "url": { "raw": "{{API_URL}}/products?keyword=semen&sort=price_asc", "query": [{ "key": "keyword", "value": "semen" }, { "key": "sort", "value": "price_asc" }] } }
+        },
+        {
+          "name": "Filter by Category",
+          "request": { "method": "GET", "url": { "raw": "{{API_URL}}/products?categoryId=00000000-0000-0000-0000-000000000030", "query": [{ "key": "categoryId", "value": "00000000-0000-0000-0000-000000000030" }] } }
+        },
+        {
+          "name": "Filter by Price Range",
+          "request": { "method": "GET", "url": { "raw": "{{API_URL}}/products?minPrice=50000&maxPrice=200000", "query": [{ "key": "minPrice", "value": "50000" }, { "key": "maxPrice", "value": "200000" }] } }
+        },
+        {
+          "name": "Get Featured Products",
+          "request": { "method": "GET", "url": "{{API_URL}}/products/featured" }
+        },
+        {
+          "name": "Get Newest Products",
+          "request": { "method": "GET", "url": "{{API_URL}}/products/newest" }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": { "method": "GET", "url": "{{API_URL}}/products/00000000-0000-0000-0001-000000000001" }
+        },
+        {
+          "name": "Get Product by Slug",
+          "request": { "method": "GET", "url": "{{API_URL}}/products/slug/semen-portland-tipe-i-holcim-50kg" }
+        },
+        {
+          "name": "Create Product (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/products",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Semen Padang 50kg" },
+                { "key": "description", "value": "Semen Portland tipe I merk Padang untuk berbagai kebutuhan konstruksi" },
+                { "key": "price", "value": "65000" },
+                { "key": "stock", "value": "400" },
+                { "key": "weight", "value": "50" },
+                { "key": "categoryId", "value": "00000000-0000-0000-0000-000000000030" },
+                { "key": "status", "value": "ACTIVE" },
+                { "key": "isFeatured", "value": "false" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Product (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/products/00000000-0000-0000-0001-000000000001",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "price", "value": "70000" },
+                { "key": "stock", "value": "600" },
+                { "key": "isFeatured", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Product (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/products/00000000-0000-0000-0001-000000000001"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🖼️ Banners",
+      "item": [
+        {
+          "name": "Get All Banners",
+          "request": { "method": "GET", "url": "{{API_URL}}/banners" }
+        },
+        {
+          "name": "Get Active Banners",
+          "request": { "method": "GET", "url": "{{API_URL}}/banners/active" }
+        },
+        {
+          "name": "Get Banner by ID",
+          "request": { "method": "GET", "url": "{{API_URL}}/banners/00000000-0000-0000-0002-000000000001" }
+        },
+        {
+          "name": "Create Banner (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/banners",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Promo Hari Raya" },
+                { "key": "subtitle", "value": "Diskon spesial untuk semua produk bangunan" },
+                { "key": "imageUrl", "value": "https://placehold.co/1200x400/E53935/ffffff?text=Promo+Hari+Raya" },
+                { "key": "linkUrl", "value": "/products" },
+                { "key": "isActive", "value": "true" },
+                { "key": "sortOrder", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Banner (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/banners/00000000-0000-0000-0002-000000000001",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false,\n  \"sortOrder\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Banner (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/banners/00000000-0000-0000-0002-000000000001"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/users/profile"
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/users/profile",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Budi Santoso Updated\",\n  \"phone\": \"+6281234567891\",\n  \"address\": \"Jl. Baru No. 100, Pemalang\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{API_URL}}/users/change-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"User123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{API_URL}}/users?page=1&limit=10", "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          }
+        },
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/users/00000000-0000-0000-0000-000000000025"
+          }
+        }
+      ]
+    },
+    {
+      "name": "❤️ Favorites",
+      "item": [
+        {
+          "name": "Get My Favorites",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/favorites"
+          }
+        },
+        {
+          "name": "Toggle Favorite",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/favorites/00000000-0000-0000-0001-000000000001"
+          }
+        },
+        {
+          "name": "Check Favorite Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/favorites/00000000-0000-0000-0001-000000000001/check"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard",
+      "item": [
+        {
+          "name": "Get Statistics (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": "{{API_URL}}/dashboard/statistics"
+          }
+        }
+      ]
+    }
+  ]
+}

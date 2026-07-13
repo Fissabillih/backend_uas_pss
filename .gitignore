@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-test/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Uploads (keep folder structure)
+src/uploads/products/*
+src/uploads/banners/*
+!src/uploads/products/.gitkeep
+!src/uploads/banners/.gitkeep
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma
+prisma/migrations/dev/
