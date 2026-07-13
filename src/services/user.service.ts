@@ -41,6 +41,8 @@ export class UserService {
     const user = await this.userRepo.findById(userId);
     if (!user) throw new AppError('User not found', 404);
 
+    if (!user.password) throw new AppError('This account uses Google login. Password cannot be changed.', 400);
+
     const isMatch = await comparePassword(dto.currentPassword, user.password);
     if (!isMatch) throw new AppError('Current password is incorrect', 400);
 

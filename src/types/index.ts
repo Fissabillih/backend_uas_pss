@@ -11,6 +11,22 @@ export interface AuthenticatedRequest extends Request {
   user?: AuthPayload;
 }
 
+export interface PrismaUserShape {
+  id: string;
+  name: string;
+  email: string;
+  password: string | null;
+  googleId: string | null;
+  phone: string | null;
+  address: string | null;
+  avatarUrl: string | null;
+  role: Role;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 export interface PaginationQuery {
   page?: number;
   limit?: number;

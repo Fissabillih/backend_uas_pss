@@ -16,21 +16,16 @@ passport.use(
       try {
         const email = profile.emails?.[0]?.value;
         if (!email) {
-          return done(new Error('No email found in Google profile'), undefined);
+          return done(new Error('No email found in Google profile'));
         }
 
-        // Cek apakah user sudah ada berdasarkan googleId
         let user = await userRepo.findByGoogleId(profile.id);
 
         if (!user) {
-          // Cek apakah email sudah terdaftar (akun manual)
           user = await userRepo.findByEmail(email);
-
           if (user) {
-            // Link akun Google ke akun yang sudah ada
             user = await userRepo.linkGoogleId(user.id, profile.id);
           } else {
-            // Buat akun baru via Google
             user = await userRepo.createGoogleUser({
               googleId: profile.id,
               name: profile.displayName || email.split('@')[0],
@@ -43,12 +38,19 @@ passport.use(
         }
 
         if (!user.isActive) {
-          return done(new Error('Account has been deactivated'), undefined);
+          return done(new Error('Account has been deactivated'));
         }
 
-        return done(null, user);
+        // Map PrismaUser to Express.User (AuthPayload shape)
+        const authUser: Express.User = {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+        };
+
+        return done(null, authUser);
       } catch (err) {
-        return done(err as Error, undefined);
+        return done(err as Error);
       }
     },
   ),

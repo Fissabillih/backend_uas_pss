@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { User } from '@prisma/client';
+import { AuthPayload } from '../types';
 import { RefreshTokenRepository } from '../repositories/refreshToken.repository';
 import { generateAccessToken, generateRefreshToken, getRefreshTokenExpiry } from '../utils/jwt';
 import { env } from '../config/env';
@@ -9,7 +9,7 @@ const tokenRepo = new RefreshTokenRepository();
 export class GoogleAuthController {
   async callback(req: Request, res: Response): Promise<void> {
     try {
-      const user = req.user as User;
+      const user = req.user as AuthPayload | undefined;
 
       if (!user) {
         res.redirect(`${env.FRONTEND_URL}/login?error=google_auth_failed`);
@@ -22,25 +22,18 @@ export class GoogleAuthController {
         return;
       }
 
-      const payload = { userId: user.id, email: user.email, role: user.role };
-      const accessToken = generateAccessToken(payload);
-      const refreshToken = generateRefreshToken(payload);
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
 
       await tokenRepo.create({
         token: refreshToken,
-        user: { connect: { id: user.id } },
+        user: { connect: { id: user.userId } },
         expiresAt: getRefreshTokenExpiry(),
         ipAddress: req.ip ?? req.socket.remoteAddress,
         userAgent: req.headers['user-agent'],
       });
 
-      // Redirect ke frontend dengan token di query string
-      // Frontend akan menyimpan token dan redirect ke halaman yang sesuai
-      const params = new URLSearchParams({
-        accessToken,
-        refreshToken,
-      });
-
+      const params = new URLSearchParams({ accessToken, refreshToken });
       res.redirect(`${env.FRONTEND_URL}/auth/google/callback?${params.toString()}`);
     } catch {
       res.redirect(`${env.FRONTEND_URL}/login?error=google_auth_failed`);
