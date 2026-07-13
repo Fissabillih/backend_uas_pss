@@ -3,6 +3,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Cache bust: v2
 # Copy package files
 COPY package*.json ./
 COPY prisma ./prisma/
