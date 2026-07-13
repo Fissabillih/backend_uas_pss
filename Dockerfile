@@ -55,4 +55,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD wget -q -O- http://localhost:3000/health || exit 1
 
 # Push schema to DB then start server
-CMD ["sh", "-c", "node_modules/.bin/prisma db push --skip-generate && node dist/app.js"]
+# Push schema to DB then start server
+CMD ["node", "dist/app.js"]
