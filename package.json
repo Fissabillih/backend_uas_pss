@@ -19,8 +19,7 @@
     "test": "jest --runInBand --forceExit",
     "test:unit": "jest --testPathPattern=src/tests/unit --runInBand --forceExit",
     "test:integration": "jest --testPathPattern=src/tests/integration --runInBand --forceExit",
-    "test:coverage": "jest --coverage --runInBand --forceExit",
-    "postinstall": "npx prisma generate"
+    "test:coverage": "jest --coverage --runInBand --forceExit"
   },
   "keywords": [
     "express",
@@ -86,6 +85,6 @@
     "seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=20.0.0"
   }
 }
