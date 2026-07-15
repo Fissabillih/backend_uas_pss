@@ -28,8 +28,11 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
-      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      const allowedOrigins = env.CORS_ORIGIN
+        .split(',')
+        .map((o) => o.trim().replace(/\/$/, '')); // strip trailing slash
+      const normalizedOrigin = origin?.replace(/\/$/, '');
+      if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin) || allowedOrigins.includes('*')) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
