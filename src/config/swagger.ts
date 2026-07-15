@@ -187,7 +187,12 @@ API ini menggunakan JWT Bearer Token. Untuk mengakses endpoint yang memerlukan a
       { name: 'Dashboard', description: 'Admin dashboard statistics' },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/swagger/*.ts'],
+  apis: [
+    './src/routes/*.ts',
+    './src/swagger/*.ts',
+    './dist/routes/*.js',
+    './dist/swagger/*.js',
+  ],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
