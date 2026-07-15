@@ -45,6 +45,10 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 # Create upload directories
 RUN mkdir -p src/uploads/products src/uploads/banners
 
+# Copy startup script
+COPY start.sh ./start.sh
+RUN chmod +x start.sh
+
 # Non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodeuser -u 1001 && \
@@ -54,7 +58,7 @@ USER nodeuser
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
   CMD wget -q -O- http://localhost:3000/health || exit 1
 
-CMD ["node", "dist/app.js"]
+CMD ["sh", "start.sh"]
